@@ -18,7 +18,7 @@ export default async function() {
     marginRight: 30,
     marks: [
       Plot.ruleY([1], {strokeWidth: 0.5}),
-      Plot.ruleX([0, 9], { strokeDasharray: [2, 4] }),
+      Plot.ruleX([0, 9], {strokeDasharray: [2, 4]}),
       Plot.text([0, 9], {
         x: [0, 9],
         y: [1 + 7 / 100, 1 - 7 / 100],
@@ -53,7 +53,8 @@ export default async function() {
           x: "quarters",
           y: "gdpc1",
           stroke: "start",
-          strokeWidth: () => 3 + 2 * random()
+          strokeWidth: () => 3 + 2 * random(),
+          halo: true
         })
       ),
       Plot.line(
@@ -73,7 +74,9 @@ export default async function() {
           x: "quarters",
           y: "gdpc1",
           stroke: "start",
-          halo: {stroke: "pink", strokeWidth: 14, strokeDasharray: "7 17"}
+          strokeDasharray: "2% 1.5%",
+          haloColor: "pink",
+          haloRadius: 1
         })
       )
     ],

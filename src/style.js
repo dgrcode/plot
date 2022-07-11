@@ -1,7 +1,7 @@
 import {group, namespaces} from "d3";
 import {defined, nonempty} from "./defined.js";
 import {formatDefault} from "./format.js";
-import {string, number, maybeColorChannel, maybeNumberChannel, isNoneish, isNone, isRound, keyof, isColor} from "./options.js";
+import {string, number, maybeColorChannel, maybeNumberChannel, isNoneish, isNone, isRound, keyof} from "./options.js";
 import {warn} from "./warnings.js";
 
 export const offset = typeof window !== "undefined" && window.devicePixelRatio > 1 ? 0 : 0.5;
@@ -349,27 +349,3 @@ export function applyFrameAnchor({frameAnchor}, {width, height, marginTop, margi
   ];
 }
 
-export function maybeHalo(halo) {
-  if (!halo) return false;
-  const defaults = {
-    stroke: "white",
-    strokeDasharray: "none",
-    strokeWidth: function() {
-      const a = this.nextSibling.getAttribute("stroke-width");
-      return 2 + 1.5 * (a === null ? (this.parentElement.getAttribute("stroke-width") || 1) : a);
-    }
-  };
-  switch (typeof halo) {
-    case "boolean":
-      return defaults;
-    case "number":
-      return {...defaults, strokeWidth: halo};
-    case "string":
-      if (isColor(halo)) return {...defaults, stroke: halo};
-      break;
-    case "object":
-      if (halo[Symbol.iterator]) throw new Error(`Unsupported halo definition: ${halo}`);
-      return {...defaults, ...halo};
-  }
-  throw new Error(`Unsupported halo definition: ${halo}`);
-}

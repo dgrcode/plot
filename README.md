@@ -2402,17 +2402,11 @@ The tension option only has an effect on cardinal and Catmull–Rom splines (*ca
 
 ## Halo
 
-The line mark support halo options, allowing to better separate multiple lines by interspersing another, usually white and thick, line, below each curve (in the case of variable aesthetics, the halo segments for a line are all placed below the first segment of the line). The halo options can be specified as:
+The line mark support a halo filter, allowing to better separate multiple lines by adding a thick white background underneath each line, [a technique described by Sara Soueidan](https://tympanus.net/codrops/2019/01/22/svg-filter-effects-outline-text-with-femorphology/). The halo options can be specified as:
 
-* *true* - a halo with default styles
-* a number - a halo with default styles and this stroke-width 
-* a color string - a halo with default styles and this stroke color
-* an object that may specify halo options
-
-Unless specified in the halo options, the halo line inherits the mark’s styles (if specified as constants), except for the following:
-* *stroke* - the halo’s stroke color, defaults to white
-* *strokeDasharray* - the halo’s stroke dash array, defaults to none
-* *strokeWidth* - the halo’s stroke width, defaults to 2 + 1.5 times the line’s stroke width (and, in the case of variable aesthetics, 2 + 1.5 times the line segment’s width)
+* *haloColor* - the halo’s color, defaults to white
+* *haloRadius* - the halo’s radius, which defaults to 2px
+* *halo* - if true, activates the halo filter; if specified as a color, defines the halo’s color; if specified as a number, defines the halo’s radius
 
 ## Markers
 
