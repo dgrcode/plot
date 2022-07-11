@@ -3,6 +3,15 @@ import * as d3 from "d3";
 import assert from "assert";
 import it from "../jsdom.js";
 
+it("Plot throws an error if an ordinal position scale has a huge inferred domain", () => {
+  assert.ok(Plot.cellX({length: 10000}, {x: d3.randomLcg(42)}).plot());
+  assert.throws(() => Plot.cellX({length: 10001}, {x: d3.randomLcg(42)}).plot());
+});
+
+it("Plot does not throw an error if an ordinal color scale has a huge inferred domain", () => {
+  assert.ok(Plot.dotX({length: 10001}, {x: 0, fill: d3.randomLcg(42)}).plot({color: {type: "ordinal"}}));
+});
+
 it("Plot.scale(description) returns a standalone scale", () => {
   const color = Plot.scale({color: {type: "linear"}});
   scaleEqual(color, {
@@ -329,6 +338,19 @@ it("plot(…).scale(name).unknown reflects the given unknown option for a diverg
 it("plot(…).scale(name) promotes the given zero option to the domain", async () => {
   const penguins = await d3.csv("data/penguins.csv", d3.autoType);
   const plot = Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {zero: true}});
+  scaleEqual(plot.scale("x"), {
+    type: "linear",
+    domain: [0, 6300],
+    range: [20, 620],
+    interpolate: d3.interpolateNumber,
+    clamp: false,
+    label: "body_mass_g →"
+  });
+});
+
+it("plot(…).scale(name) promotes the given global zero option to the domain", async () => {
+  const penguins = await d3.csv("data/penguins.csv", d3.autoType);
+  const plot = Plot.dotX(penguins, {x: "body_mass_g"}).plot({zero: true});
   scaleEqual(plot.scale("x"), {
     type: "linear",
     domain: [0, 6300],
@@ -1197,6 +1219,7 @@ it("plot({inset, …}).scale('x').range respects the given scale-level inset", (
 it("plot({clamp, …}).scale('x').clamp reflects the given clamp option", () => {
   assert.strictEqual(Plot.dot([1, 2, 3], {x: d => d}).plot({x: {clamp: false}}).scale("x").clamp, false);
   assert.strictEqual(Plot.dot([1, 2, 3], {x: d => d}).plot({x: {clamp: true}}).scale("x").clamp, true);
+  assert.strictEqual(Plot.dot([1, 2, 3], {x: d => d}).plot({clamp: true}).scale("x").clamp, true);
 });
 
 it("plot({align, …}).scale('x').align reflects the given align option for point scales", () => {
@@ -1344,6 +1367,7 @@ it("plot(…).scale(name).domain respects the given nice option", async () => {
   assert.deepStrictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {nice: true}}).scale("x").domain, [2500, 6500]);
   assert.deepStrictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {nice: 10}}).scale("x").domain, [2500, 6500]);
   assert.deepStrictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {nice: 5}}).scale("x").domain, [2000, 7000]);
+  assert.deepStrictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({nice: true}).scale("x").domain, [2500, 6500]);
 });
 
 it("plot(…).scale(name).domain nices an explicit domain, too", async () => {
@@ -1358,6 +1382,7 @@ it("plot(…).scale(name).interpolate reflects the round option for quantitative
   const penguins = await d3.csv("data/penguins.csv", d3.autoType);
   assert.strictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {round: false}}).scale("x").interpolate, d3.interpolateNumber);
   assert.strictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {round: true}}).scale("x").interpolate, d3.interpolateRound);
+  assert.strictEqual(Plot.dotX(penguins, {x: "body_mass_g"}).plot({round: true}).scale("x").interpolate, d3.interpolateRound);
 });
 
 it("plot(…).scale(name).round reflects the round option for point scales", async () => {
@@ -1390,6 +1415,52 @@ it("plot(…).scale(name) reflects the given custom interpolator", async () => {
     clamp: false,
     label: "body_mass_g →"
   });
+});
+
+it("plot(…).scale(name).interval changes the domain and sets the transform option for ordinal scales", async () => {
+  const requests = [[2002,9],[2003,17],[2004,12],[2005,5],[2006,12],[2007,18],[2008,16],[2009,11],[2010,9],[2011,8],[2012,9],[2019,20]];
+  const plot = Plot.barY(requests, {x: "0", y: "1"}).plot({x: {interval: 1}});
+  scaleEqual(plot.scale("x"), {
+    align: 0.5,
+    bandwidth: 29,
+    domain: d3.range(2002, 2020),
+    interval: ["floor", "offset", "range"],
+    label: "0",
+    paddingInner: 0.1,
+    paddingOuter: 0.1,
+    range: [40, 620],
+    round: true,
+    step: 32,
+    type: "band"
+  });
+});
+
+it("plot(…).scale(name).interval reflects the interval option for quantitative scales", async () => {
+  const penguins = await d3.csv("data/penguins.csv", d3.autoType);
+  const plot = Plot.dotX(penguins, {x: "body_mass_g"}).plot({x: {interval: 50}});
+  scaleEqual(plot.scale("x"), {
+    clamp: false,
+    domain: [2700, 6300],
+    interpolate: d3.interpolateNumber,
+    interval: ["floor", "offset", "range"],
+    label: "body_mass_g →",
+    range: [20, 620],
+    type: "linear"
+  });
+});
+
+it("The interval option is reusable for ordinal scales", async () => {
+  const requests = [[2002,9],[2003.5,17],[2005.9,5]];
+  const plot1 = Plot.barY(requests, {x: "0", y: "1"}).plot({x: {interval: 1}, className: "a"});
+  const plot2 = Plot.barY(requests, {x: "0", y: "1"}).plot({x: plot1.scale("x"), className: "a"});
+  assert.strictEqual(plot1.innerHTML, plot2.innerHTML);
+});
+
+it("The interval option is reusable for quantitative scales", async () => {
+  const requests = [[2002,9],[2003.5,17],[2005.9,5]];
+  const plot1 = Plot.dot(requests, {x: "0", y: "1"}).plot({x: {interval: 1}, className: "a"});
+  const plot2 = Plot.dot(requests, {x: "0", y: "1"}).plot({x: plot1.scale("x"), className: "a"});
+  assert.strictEqual(plot1.innerHTML, plot2.innerHTML);
 });
 
 it("plot(…).scale('color') allows a range to be specified in conjunction with a scheme", async () => {
@@ -1484,6 +1555,7 @@ function scaleEqual({...scale}, spec) {
   } else {
     delete scale.apply;
   }
+  if (scale.interval) scale.interval = Object.keys(scale.interval);
   if (typeof scale.invert !== "function" && !(["band", "point", "threshold", "ordinal", "diverging", "diverging-log", "diverging-symlog", "diverging-pow" ].includes(scale.type))) {
     scale.invert = typeof scale.invert;
   } else {

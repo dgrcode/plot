@@ -178,7 +178,7 @@ export function colorLegendThresholdTickSize() {
   });
 }
 
-// This quantile scale is implicitly converted to a threshold scale!
+// Quantile scales are implicitly converted to threshold scales.
 export function colorLegendQuantile() {
   return Plot.legend({
     color: {
@@ -192,7 +192,6 @@ export function colorLegendQuantile() {
   });
 }
 
-// This quantile scale is implicitly converted to a threshold scale!
 export function colorLegendQuantileImplicit() {
   return Plot.plot({
     color: {
@@ -208,7 +207,21 @@ export function colorLegendQuantileImplicit() {
   }).legend("color");
 }
 
-// Quantize scales are implicitly converted to a threshold scale
+export function colorLegendQuantileSwatches() {
+  return Plot.legend({
+    legend: "swatches",
+    color: {
+      type: "quantile",
+      scheme: "inferno",
+      domain: d3.range(100).map(i => i ** 2),
+      n: 7,
+      label: "Inferno"
+    },
+    tickFormat: ",d"
+  });
+}
+
+// Quantize scales are implicitly converted to threshold scales.
 export function colorLegendQuantize() {
   return Plot.legend({
     color: {
@@ -273,7 +286,6 @@ export function colorLegendImplicitLabel() {
 export function colorLegendDiverging() {
   return Plot.legend({
     color: {
-      type: "diverging",
       domain: [-0.1, 0.1],
       scheme: "PiYG",
       label: "Daily change"
@@ -285,7 +297,6 @@ export function colorLegendDiverging() {
 export function colorLegendDivergingPivot() {
   return Plot.legend({
     color: {
-      type: "diverging",
       domain: [1, 4],
       pivot: 3,
       scheme: "PiYG"
@@ -296,7 +307,6 @@ export function colorLegendDivergingPivot() {
 export function colorLegendDivergingPivotAsymmetric() {
   return Plot.legend({
     color: {
-      type: "diverging",
       symmetric: false,
       domain: [1, 4],
       pivot: 3,
